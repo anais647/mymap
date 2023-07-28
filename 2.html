@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Liens vers les fichiers CSS de Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    /* Style pour définir la taille de la carte */
+    #map {
+      height: 600px;
+    }
+
+    /* Style pour la légende */
+    .legend {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Contenu de la carte ici -->
+  <div id="map"></div>
+
+  <!-- Liens vers les fichiers JavaScript de Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-ajax/dist/leaflet.ajax.min.js"></script>
+  <script>
+    // Initialise la carte avec les coordonnées du centre et le niveau de zoom
+    var map = L.map('map', {
+      center: [0, 0],
+      zoom: 2,
+      maxBounds: [[-90, -180], [90, 180]], // Limites pour empêcher la répétition de la carte
+      crs: L.CRS.Simple // Utilise un système de coordonnées simple sans projection
+    });
+
+    // Ajouter les données géographiques des continents
+    var continentsLayer;
+
+    function addContinentsLayer() {
+      if (continentsLayer) {
+        map.removeLayer(continentsLayer);
+      }
+
+      continentsLayer = new L.GeoJSON.AJAX("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson", {
+        style: function (feature) {
+          return { fillColor: getColor(feature.properties.CONTINENT), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
+        },
+        onEachFeature: function (feature, layer) {
+          layer.bindPopup(feature.properties.NAME_FR); // Utilisez le nom en français du pays
+        }
+      });
+
+      continentsLayer.addTo(map);
+    }
+
+    addContinentsLayer();
+
+    // Fonction pour attribuer une couleur à chaque continent
+    function getColor(continent) {
+      var colors = {
+        'Africa': '#91AEC4',
+        'Asia': '#B7D0E1',
+        'Europe': '#98bae3',
+        'North America': '#194569',
+        'Oceania': '#DBECF4',
+        'South America': '#5F84A2'
+      };
+      return colors[continent] || '#ffffff'; // Couleur blanche pour les autres continents
+    }
+
+    // Ajouter la légende sur la carte
+    var legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.innerHTML += '<h4>Légende</h4>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #91AEC4;"></div>Africa</div>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #B7D0E1;"></div>Asia</div>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #98bae3;"></div>Europe</div>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #194569;"></div>North America</div>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #DBECF4;"></div>Oceania</div>';
+      div.innerHTML += '<div class="legend-item"><div class="legend-color" style="background-color: #5F84A2;"></div>South America</div>';
+      return div;
+    };
+
+    legend.addTo(map);
+  </script>
+</body>
+</html>
